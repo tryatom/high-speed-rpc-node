@@ -93,3 +93,5 @@ We welcome optimizations to the startup scripts, hardware tuning parameters, and
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
+ 
+<!-- Documentation update 1 for high-speed-rpc-node -->
