@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  haproxy:
+    image: haproxy:2.8
+    ports:
+      - "8899:8899"
+      - "8900:8900"
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      - solana-node
+
+  solana-node:
+    image: solanalabs/solana:v1.17.0
+    restart: unless-stopped
+    command: >
+      solana-validator 
+      --identity /root/node/identity.json 
+      --vote-account /root/node/vote-account.json 
+      --known-validator 7Np41oeYqPefeNQEHSv1bDdXZQST3x1z6Tks8WzK9Z6S 
+      --only-known-rpc 
+      --rpc-port 8899 
+      --rpc-bind-address 0.0.0.0 
+      --dynamic-port-range 8000-8020 
+      --entrypoint entrypoint.mainnet-beta.solana.com:8001 
+      --expected-genesis-hash 5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d 
+      --wal-recovery-mode skip_any_corrupted_record 
+      --limit-ledger-size 50000000 
+      --account-index program-id 
+      --account-index spl-token-owner
+    volumes:
+      - /mnt/ledger/val-data:/root/node
+      - /mnt/accounts:/mnt/accounts
+    network_mode: "host"
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
